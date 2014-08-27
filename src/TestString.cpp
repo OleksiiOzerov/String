@@ -3,6 +3,7 @@
 #include "MyString.h"
 
 #include <cstring>
+#include <utility>
 
 TEST(StringConstructorTest, NullaryConstructor)
 {
@@ -110,8 +111,9 @@ TEST(StringConstructorTest, InitializerList)
 /*TEST(StringConstructorTest, RangeConstructor)
 {
     Home::String str1{'H','e','l','l','o',' ','w','o','r','l','d'};
-    Home::String str2(str1.begin(), str2.end());
+    Home::String str2(str1.begin(), str1.end());
     std::string str3{'H','e','l','l','o',' ','w','o','r','l','d'};
+    std::string str4(str3.begin(), str3.end());
 
     EXPECT_EQ(str1.size(), str2.size());
     EXPECT_EQ(str1.capacity(), str2.capacity());
@@ -126,6 +128,29 @@ TEST(StringConstructorTest, InitializerList)
         }
     }
 }*/
+
+TEST(StringConstructorTest, MoveConstructor)
+{
+    Home::String str4{'H','e','l','l','o',' ','w','o','r','l','d'};
+    Home::String str1{'H','e','l','l','o',' ','w','o','r','l','d'};
+    Home::String str2(std::move(str4));
+    std::string str3{'H','e','l','l','o',' ','w','o','r','l','d'};
+
+    EXPECT_EQ(str1.size(), str2.size());
+    EXPECT_EQ(str1.capacity(), str2.capacity());
+    EXPECT_EQ(str1.length(), str2.length());
+    EXPECT_EQ(0, str1.compare(str2));
+
+    EXPECT_TRUE(str4.empty());
+
+    for (size_t i = 0; i < str3.length(); ++i)
+    {
+        if (str1[i] != str3[i])
+        {
+            ADD_FAILURE();
+        }
+    }
+}
 
 TEST(StringAssignOperatorTest, AssignStringOperator)
 {

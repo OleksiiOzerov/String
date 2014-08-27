@@ -11,34 +11,79 @@
 #include <cstring>
 
 //#include <iostream>
-
 namespace Home
 {
 
-String::String() : mString(NULL), mLength(0), mCapacity(0)
+char* String::AllocateNewString(size_t capacity)
+{
+    char * string = new char[capacity + 1];
+    ++string;
+    return string;
+}
+
+void String::AllocateString(size_t length)
+{
+    mLength = length;
+    mCapacity = String::allocationCoefficient * mLength;
+
+    mString = new char[mCapacity + 1];
+    ++mString;
+}
+
+void String::DeleteString()
+{
+    if (mString != nullptr)
+    {
+        --mString;
+        delete [] mString;
+        mString = nullptr;
+    }
+}
+
+void String::CopyString(const char* inputString, size_t pos)
+{
+    for (size_t i = 0; i < mLength; ++i, ++pos)
+    {
+        mString[i] = inputString[pos];
+    }
+}
+
+void String::CopyString(char c)
+{
+    for (size_t i = 0; i < mLength; ++i)
+    {
+        mString[i] = c;
+    }
+}
+
+String::String() : mString(nullptr), mLength(0), mCapacity(0)
 {
 }
 
-String::String(const String &inputString) : mLength(inputString.mLength), mCapacity(inputString.mCapacity)
+String::String(const String &inputString)
 {
-    mString = new char[mCapacity];
-
-    for (size_t i = 0; i < mLength; ++i)
+    if (inputString.mLength == 0)
     {
-        mString[i] = inputString.mString[i];
+        String();
+        return;
     }
+
+    AllocateString(inputString.mLength);
+
+    CopyString(inputString.mString);
 }
 
 String::String(const String &inputString, size_t pos, size_t len)
 {
-    if (pos >= inputString.mLength )
-    {
-        throw(std::out_of_range("Home::String(inputString, pos, len) pos out_of_range"));
-    }
-    else if (len == 0u)
+    if (len == 0 || inputString.mLength == 0)
     {
         String();
         return;
+    }
+
+    if (pos >= inputString.mLength )
+    {
+        throw(std::out_of_range("Home::String(inputString, pos, len) pos out_of_range"));
     }
 
     if (len > inputString.mLength - pos)
@@ -46,79 +91,54 @@ String::String(const String &inputString, size_t pos, size_t len)
         len = inputString.mLength - pos;
     }
 
-    mLength = len;
-    mCapacity = String::allocationCoefficient * 2;
+    AllocateString(len);
 
-    mString = new char[mCapacity];
-
-    for (size_t i = 0; i < mLength; ++i, ++pos)
-    {
-        mString[i] = inputString.mString[pos];
-    }
+    CopyString(inputString.mString, pos);
 }
 
 String::String(const char* inputString)
 {
-    if (inputString == NULL || (mLength = strlen(inputString)) == 0)
+    int inputStringLen = 0;
+    if (inputString == NULL || (inputStringLen = strlen(inputString)) == 0)
     {
         String();
+        return;
     }
 
-    mCapacity = mLength * allocationCoefficient;
+    AllocateString(inputStringLen);
 
-    mString = new char[mCapacity];
-
-    for (size_t i = 0; i < mLength; ++i)
-    {
-        mString[i] = inputString[i];
-    }
+    CopyString(inputString);
 }
 
 String::String(const char* inputString, size_t n)
 {
-
     size_t inputStringLen = 0;
     if (inputString == NULL || (inputStringLen = strlen(inputString)) == 0)
     {
-        //TODO::Throw exception?
         String();
         return;
     }
-    if (n > inputStringLen || n == String::npos)
+
+    if (n > inputStringLen || n > String::npos)
     {
         n = inputStringLen;
     }
-    mLength = n;
 
-    mCapacity = mLength * allocationCoefficient;
+    AllocateString(n);
 
-    mString = new char[mCapacity];
-
-    for (size_t i = 0; i < mLength; ++i)
-    {
-        mString[i] = inputString[i];
-    }
+    CopyString(inputString);
 }
 
-String::String(size_t n, char c) : mLength(n)
+String::String(size_t n, char c)
 {
-    mCapacity = mLength * allocationCoefficient;
+    AllocateString(n);
 
-    mString = new char[mCapacity];
-
-    for (size_t i = 0; i < mLength; ++i)
-    {
-        mString[i] = c;
-    }
+    CopyString(c);
 }
 
 String::String(std::initializer_list<char> il)
 {
-    mLength = il.size();
-
-    mCapacity = mLength * allocationCoefficient;
-
-    mString = new char[mCapacity];
+    AllocateString(il.size());
 
     size_t i = 0;
     for(auto c : il)
@@ -128,63 +148,79 @@ String::String(std::initializer_list<char> il)
     }
 }
 
-/*template <class InputIterator>
+template <class InputIterator>
 String::String(InputIterator first, InputIterator last)
 {
-    if (first == last)
-    {
-        String();
-        return;
-    }
-
     size_t length = 0;
     for (auto it = first; first != last; it++)
     {
         ++length;
     }
-}*/
+
+    if (length == 0)
+    {
+        String();
+        return;
+    }
+
+    AllocateString(length);
+
+    size_t i = 0;
+    for (auto it = first; first != last; ++it, ++i)
+    {
+        mString[i] = *it;
+    }
+}
+
+
+String::String(String&& str) noexcept
+{
+    if (str.mLength == 0)
+    {
+        String();
+        return;
+    }
+
+    mLength = str.mLength;
+    mCapacity = str.mCapacity;
+    mString = str.mString;
+    str.mLength = 0;
+    str.mCapacity = 0;
+    str.mString = nullptr;
+}
+
 
 String& String::operator=(const String& inputString)
 {
     if (mCapacity != 0)
     {
-        delete [] mString;
+        DeleteString();
     }
 
-    mLength = inputString.mLength;
-    mCapacity = inputString.mCapacity;
+    AllocateString(inputString.mLength);
 
-    mString = new char[mCapacity];
-
-    for (size_t i = 0; i < mLength; ++i)
-    {
-        mString[i] = inputString.mString[i];
-    }
+    CopyString(inputString.mString);
 
     return *this;
 }
 
 String& String::operator=(const char* inputString)
 {
-    if (inputString == NULL || (mLength = strlen(inputString)) == 0)
+    size_t inputStringLen = 0;
+    if (inputString == NULL || (inputStringLen = strlen(inputString)) == 0)
     {
-        //TODO::Throw exception?
         String();
+        return *this;
     }
 
     if (mCapacity != 0)
     {
-        delete [] mString;
+        DeleteString();
     }
 
-    mCapacity = mLength * allocationCoefficient;
+    AllocateString(inputStringLen);
 
-    mString = new char[mCapacity];
-
-    for (size_t i = 0; i < mLength; ++i)
-    {
-        mString[i] = inputString[i];
-    }
+    CopyString(inputString);
 
     return *this;
 }
@@ -193,13 +229,10 @@ String& String::operator=(char c)
 {
     if (mCapacity != 0)
     {
-        delete [] mString;
+        DeleteString();
     }
 
-    mLength = 1;
-    mCapacity = mLength * allocationCoefficient;
-
-    mString = new char[mCapacity];
+    AllocateString(1);
 
     mString[0] = c;
     return *this;
@@ -207,13 +240,12 @@ String& String::operator=(char c)
 
 String::~String()
 {
-    delete [] mString;
+    DeleteString();
 }
-
 
 char& String::at(size_t pos)
 {
-    if(pos < 0 || pos > mLength -1)
+    if(pos < 0 || pos > mLength - 1)
     {
         throw(std::out_of_range("out of range"));
     }
@@ -225,7 +257,7 @@ char& String::at(size_t pos)
 
 const char& String::at(size_t pos) const
 {
-    if(pos < 0 || pos > mLength -1)
+    if(pos < 0 || pos > mLength - 1)
     {
         throw(std::out_of_range("out of range"));
     }
@@ -237,26 +269,7 @@ const char& String::at(size_t pos) const
 
 void String::resize(size_t newLength)
 {
-/*    if (newLength <= mCapacity)
-    {
-        mLength = newLength;
-    }
-    else if (newLength > mCapacity && newLength < max_size())
-    {
-        size_t newCapacity = newLength * allocationCoefficient;
-        char * newString = new char[newCapacity];
-        for (size_t i = 0; i < mLength; ++i)
-        {
-            newString[i] = mString[i];
-        }
-
-        mLength = newLength;
-        mCapacity = newCapacity;
-        delete mString;
-        mString = newString;
-    }*/
     resize(newLength, '\0');
-
 }
 
 void String::resize(size_t newLength, char c)
@@ -278,7 +291,7 @@ void String::resize(size_t newLength, char c)
         else
         {
             size_t newCapacity = newLength * allocationCoefficient;
-            char * newString = new char[newCapacity];
+            char * newString = AllocateNewString(newCapacity);
             for (size_t i = 0; i < mLength; ++i)
             {
                 newString[i] = mString[i];
@@ -290,7 +303,7 @@ void String::resize(size_t newLength, char c)
 
             mLength = newLength;
             mCapacity = newCapacity;
-            delete mString;
+            DeleteString();
             mString = newString;
         }
     }
@@ -305,14 +318,14 @@ void String::reserve(size_t newCapacity)
             newCapacity = mLength;
         }
 
-        char * newString = new char[newCapacity];
+        char * newString = AllocateNewString(newCapacity);
         for (size_t i = 0; i < mLength; ++i)
         {
             newString[i] = mString[i];
         }
 
         mCapacity = newCapacity;
-        delete mString;
+        DeleteString();
         mString = newString;
     }
 }
@@ -322,6 +335,8 @@ void String::clear()
     if (mLength > 0)
     {
         mLength = 0;
+        mCapacity = 0;
+        DeleteString();
     }
 }
 
@@ -395,8 +410,6 @@ String& String::operator+=(const char* str)
 
 String& String::operator+=(char c)
 {
-
-    int i {};
     if (mLength + 1 <= mCapacity)
     {
         mString[mLength] = c;

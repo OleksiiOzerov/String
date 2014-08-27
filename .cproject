@@ -42,7 +42,7 @@
 									<listOptionValue builtIn="false" value="gtest"/>
 									<listOptionValue builtIn="false" value="gtest_main"/>
 								</option>
-								<option id="gnu.cpp.link.option.paths.626298291" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths"/>
+								<option id="gnu.cpp.link.option.paths.626298291" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1592948138" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

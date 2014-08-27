@@ -86,10 +86,10 @@ public:
 
     String(std::initializer_list<char> il);
 
-/*    template <class InputIterator>
-        String(InputIterator first, InputIterator last);*/
+    template <class InputIterator>
+    String(InputIterator first, InputIterator last);
 
-   // String(string&& str) noexcept;
+    String(String&& str) noexcept;
 
     virtual ~String();
 
@@ -137,7 +137,6 @@ public:
 
     reverseIterator rend() noexcept
     {
-        //FIXME
         return reverseIterator(&mString[0 - 1]);
     }
 
@@ -328,10 +327,22 @@ public:
 
 private:
 
+    inline char* AllocateNewString(size_t capacity);
+
+    inline void AllocateString(size_t length);
+
+    inline void DeleteString();
+
+    inline void CopyString(const char* inputString, size_t pos = 0);
+
+    inline void CopyString(char c);
 
     char *mString;
+
     size_t mLength;
+
     size_t mCapacity;
+
     static const int allocationCoefficient = 2;
 };
 

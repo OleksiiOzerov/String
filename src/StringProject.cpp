@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
     std::cout << std::endl << std::endl << "3###############3" << std::endl;*/
 
-    std::cout <<  __cplusplus << std::endl;
+    //std::cout <<  __cplusplus << std::endl;
 
     ::testing::InitGoogleTest(&argc, argv);
 
