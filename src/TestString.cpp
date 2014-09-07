@@ -192,6 +192,59 @@ TEST(StringAssignOperatorTest, AssignCharOperator)
     EXPECT_TRUE(str1[0] == 'a');
 }
 
+TEST(StringAssignOperatorTest, InitializerList)
+{
+    Home::String etalonString("Hello world");
+    Home::String testString("test");
+
+    testString = {'H','e','l','l','o',' ','w','o','r','l','d'};
+
+    std::string realString("hi");
+
+    realString = {'H','e','l','l','o',' ','w','o','r','l','d'};
+
+    EXPECT_EQ(testString.size(), etalonString.size());
+    EXPECT_EQ(testString.capacity(), testString.capacity());
+    EXPECT_EQ(testString.length(), testString.length());
+    EXPECT_EQ(0, testString.compare(etalonString));
+
+    for (size_t i = 0; i < realString.length(); ++i)
+    {
+        if (testString[i] != realString[i])
+        {
+            ADD_FAILURE();
+        }
+    }
+}
+
+TEST(StringAssignOperatorTest, MoveSemantic)
+{
+    Home::String testString("test");
+    Home::String tempString("Hello world");
+    Home::String etalonString("Hello world");
+
+    testString = std::move(tempString);
+
+    std::string realString("hi");
+    std::string tempString2("Hello world");
+
+    realString = std::move(tempString2);
+
+    EXPECT_EQ(testString.size(), etalonString.size());
+    EXPECT_EQ(testString.capacity(), testString.capacity());
+    EXPECT_EQ(testString.length(), testString.length());
+    EXPECT_EQ(0, testString.compare(etalonString));
+
+    for (size_t i = 0; i < realString.length(); ++i)
+    {
+        if (testString[i] != realString[i])
+        {
+            ADD_FAILURE();
+        }
+    }
+}
+
+
 TEST(StringIteratorTest, Begin)
 {
     Home::String str1("Earth");
@@ -476,6 +529,31 @@ TEST(StringModifiersTest, CharAppendOperator)
     for (size_t i = 0; i < str2.length(); ++i)
     {
         if (str1[i] != str2[i])
+        {
+            ADD_FAILURE();
+        }
+    }
+}
+
+TEST(StringModifiersTest, InitializerListAppendOperator)
+{
+    Home::String testString("Hello ");
+    std::string realString("Hello ");
+
+    testString += {'w', 'o', 'r', 'l', 'd'};
+    realString += {'w', 'o', 'r', 'l', 'd'};
+
+    Home::String etalonString("Hello world");
+
+    EXPECT_EQ(0, testString.compare(etalonString));
+    EXPECT_EQ(testString.size(), etalonString.size());
+    EXPECT_EQ(testString.length(), etalonString.length());
+    EXPECT_EQ(testString.size(), realString.size());
+    EXPECT_EQ(testString.length(), realString.length());
+
+    for (size_t i = 0; i < realString.length(); ++i)
+    {
+        if (testString[i] != realString[i])
         {
             ADD_FAILURE();
         }

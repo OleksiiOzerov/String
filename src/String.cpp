@@ -10,24 +10,43 @@
 #include <stdexcept>
 #include <cstring>
 
-//#include <iostream>
 namespace Home
 {
 
 char* String::AllocateNewString(size_t capacity)
 {
-    char * string = new char[capacity + 1];
+    char * string = new char[capacity + 2];
     ++string;
     return string;
 }
 
 void String::AllocateString(size_t length)
 {
-    mLength = length;
-    mCapacity = String::allocationCoefficient * mLength;
+    if (length == 0)
+    {
+        mLength = 0;
+        mCapacity = 0;
 
-    mString = new char[mCapacity + 1];
-    ++mString;
+        mString = nullptr;
+    }
+    else
+    {
+        mLength = length;
+        mCapacity = String::allocationCoefficient * mLength;
+
+        mString = new char[mCapacity + 2];
+        ++mString;
+    }
+}
+
+void String::MoveString(String& inputString)
+{
+    mLength = inputString.mLength;
+    mCapacity = inputString.mCapacity;
+    mString = inputString.mString;
+    inputString.mLength = 0;
+    inputString.mCapacity = 0;
+    inputString.mString = nullptr;
 }
 
 void String::DeleteString()
@@ -56,18 +75,25 @@ void String::CopyString(char c)
     }
 }
 
+/*bool String::CheckCurrentCapacity(size_t newLength)
+{
+    if (mCapacity < newLength)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+
+    }
+}*/
+
 String::String() : mString(nullptr), mLength(0), mCapacity(0)
 {
 }
 
 String::String(const String &inputString)
 {
-    if (inputString.mLength == 0)
-    {
-        String();
-        return;
-    }
-
     AllocateString(inputString.mLength);
 
     CopyString(inputString.mString);
@@ -81,7 +107,7 @@ String::String(const String &inputString, size_t pos, size_t len)
         return;
     }
 
-    if (pos >= inputString.mLength )
+    if (pos >= inputString.mLength)
     {
         throw(std::out_of_range("Home::String(inputString, pos, len) pos out_of_range"));
     }
@@ -173,29 +199,19 @@ String::String(InputIterator first, InputIterator last)
 }
 
 
-String::String(String&& str) noexcept
+String::String(String&& inputString) noexcept
 {
-    if (str.mLength == 0)
-    {
-        String();
-        return;
-    }
-
-    mLength = str.mLength;
-    mCapacity = str.mCapacity;
-    mString = str.mString;
-    str.mLength = 0;
-    str.mCapacity = 0;
-    str.mString = nullptr;
+    MoveString(inputString);
 }
 
+String::~String()
+{
+    DeleteString();
+}
 
 String& String::operator=(const String& inputString)
 {
-    if (mCapacity != 0)
-    {
-        DeleteString();
-    }
+    DeleteString();
 
     AllocateString(inputString.mLength);
 
@@ -213,10 +229,7 @@ String& String::operator=(const char* inputString)
         return *this;
     }
 
-    if (mCapacity != 0)
-    {
-        DeleteString();
-    }
+    DeleteString();
 
     AllocateString(inputStringLen);
 
@@ -227,10 +240,7 @@ String& String::operator=(const char* inputString)
 
 String& String::operator=(char c)
 {
-    if (mCapacity != 0)
-    {
-        DeleteString();
-    }
+    DeleteString();
 
     AllocateString(1);
 
@@ -238,9 +248,29 @@ String& String::operator=(char c)
     return *this;
 }
 
-String::~String()
+String& String::operator=(std::initializer_list<char> initList)
 {
     DeleteString();
+
+    AllocateString(initList.size());
+
+    size_t index = 0;
+    for (const auto& element : initList)
+    {
+        mString[index] = element;
+        ++index;
+    }
+
+    return *this;
+}
+
+String& String::operator=(String&& inputString) noexcept
+{
+    DeleteString();
+
+    MoveString(inputString);
+
+    return *this;
 }
 
 char& String::at(size_t pos)
@@ -406,8 +436,6 @@ String& String::operator+=(const char* str)
     return *this;
 }
 
-
-
 String& String::operator+=(char c)
 {
     if (mLength + 1 <= mCapacity)
@@ -422,6 +450,24 @@ String& String::operator+=(char c)
 
         mString[priviousLength] = c;
     }
+    return *this;
+}
+
+String& String::operator+=(std::initializer_list<char> initList)
+{
+    size_t newLength = mLength + initList.size();
+    if (newLength > mCapacity)
+    {
+        reserve(newLength);
+    }
+
+    size_t index = mLength;
+    for (const auto& element : initList)
+    {
+        mString[index] = element;
+        index++;
+    }
+    mLength = newLength;
     return *this;
 }
 
@@ -511,4 +557,5 @@ int String::compare(const String& str) const noexcept
         return 1;
     }
 }
+
 } /* namespace Home */

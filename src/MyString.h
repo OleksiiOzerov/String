@@ -100,12 +100,9 @@ public:
 
     String& operator=(char c);
 
-/*    TODO
+    String& operator=(std::initializer_list<char> inputList);
 
-    string& operator= (initializer_list<char> il);
-
-    string& operator= (string&& str) noexcept;
-*/
+    String& operator=(String&& str) noexcept;
 
     Iterator begin() noexcept
     {
@@ -199,8 +196,7 @@ public:
 
     String& operator+=(char c);
 
-    //TODO
-    //String& operator+=(initializer_list<char> il);
+    String& operator+=(std::initializer_list<char> initList);
 
     String& append(const String& str)
     {
@@ -227,10 +223,15 @@ public:
         return *this += String(n, c);
     }
 
+    String& append(std::initializer_list<char> initList)
+    {
+        return *this += initList;
+    }
+
 /*    template <class InputIterator>
        string& append (InputIterator first, InputIterator last);
 
-    string& append (initializer_list<char> il);*/
+    */
 
     void push_back(char c)
     {
@@ -262,15 +263,22 @@ public:
         return *this = String(n, c);
     }
 
-/*
+    String& assign (std::initializer_list<char> initList)
+    {
+        return *this = String(initList);
+
+    }
+
+    String& assign (String&& inputString) noexcept
+    {
+        return *this = std::move(inputString);
+    }
+
     template <class InputIterator>
-       string& assign (InputIterator first, InputIterator last);
-
-
-    string& assign (initializer_list<char> il);
-
-    string& assign (string&& str) noexcept;
-*/
+    String& assign (InputIterator first, InputIterator last)
+    {
+        return *this = String(first, last);;
+    }
 
     String& insert(size_t pos, const String& str);
 
@@ -336,6 +344,8 @@ private:
     inline void CopyString(const char* inputString, size_t pos = 0);
 
     inline void CopyString(char c);
+
+    inline void MoveString(String& inputString);
 
     char *mString;
 

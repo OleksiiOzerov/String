@@ -50,6 +50,12 @@ int main(int argc, char **argv)
 
     //std::cout <<  __cplusplus << std::endl;
 
+/*    std::string str;
+
+    std::string str2(str, 5, 5);
+
+    std::cout << str2 << std::endl;*/
+
     ::testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();
